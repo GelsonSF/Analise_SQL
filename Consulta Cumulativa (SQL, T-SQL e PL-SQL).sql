@@ -1,16 +1,16 @@
-/* Consulta das transações feitas */
+/* Consulta das transaÃ§Ãµes feitas */
 WITH TRANSFER_INS_T AS(
 	SELECT 
 		IT.TRANSACTION_COMPLETED_AT											AS COMPLETED,
-		M.ACTION_MONTH														AS ACTION_MONTH, 
-		Y.ACTION_YEAR														AS ACTION_YEAR,
-		IT.ACCOUNT_ID														AS ACCOUNT_ID,
-		TM.ACTION_TIMESTAMP													AS ACTION_TIMESTAMP,
+		M.ACTION_MONTH													AS ACTION_MONTH, 
+		Y.ACTION_YEAR													AS ACTION_YEAR,
+		IT.ACCOUNT_ID													AS ACCOUNT_ID,
+		TM.ACTION_TIMESTAMP												AS ACTION_TIMESTAMP,
 		CASE
 			WHEN IT.STATUS = 'completed'
 				THEN SUM(IT.AMOUNT)			
-					ELSE 0 END												AS AMOUNT_IN,
-		0																	AS AMOUNT_OUT
+					ELSE 0 END										AS AMOUNT_IN,
+		0														AS AMOUNT_OUT
 	FROM 
 		D_TIME TM
 		JOIN TRANSFER_INS IT ON IT.TRANSACTION_COMPLETED_AT = TM.TIME_ID
@@ -21,19 +21,19 @@ WITH TRANSFER_INS_T AS(
 	GROUP BY 
 		IT.TRANSACTION_COMPLETED_AT, M.ACTION_MONTH, Y.ACTION_YEAR, IT.ACCOUNT_ID, TM.ACTION_TIMESTAMP, IT.STATUS
 ),
-/* Consulta das transações recebidas */
+/* Consulta das transaÃ§Ãµes recebidas */
 TRANSFER_OUTS_T AS(
 	SELECT 
 		OT.TRANSACTION_COMPLETED_AT											AS COMPLETED,
-		M.ACTION_MONTH														AS ACTION_MONTH, 
-		Y.ACTION_YEAR														AS ACTION_YEAR,
-		OT.ACCOUNT_ID														AS ACCOUNT_ID,
-		TM.ACTION_TIMESTAMP													AS ACTION_TIMESTAMP,
-		0																	AS AMOUNT_IN,
+		M.ACTION_MONTH													AS ACTION_MONTH, 
+		Y.ACTION_YEAR													AS ACTION_YEAR,
+		OT.ACCOUNT_ID													AS ACCOUNT_ID,
+		TM.ACTION_TIMESTAMP												AS ACTION_TIMESTAMP,
+		0														AS AMOUNT_IN,
 		CASE
 			WHEN OT.STATUS = 'completed'
 				THEN SUM(OT.AMOUNT)			
-					ELSE 0 END												AS AMOUNT_OUT
+					ELSE 0 END										AS AMOUNT_OUT
 	FROM 
 		D_TIME TM
 		JOIN TRANSFER_OUTS OT ON OT.TRANSACTION_COMPLETED_AT = TM.TIME_ID
@@ -44,22 +44,22 @@ TRANSFER_OUTS_T AS(
 	GROUP BY 
 		OT.TRANSACTION_COMPLETED_AT, M.ACTION_MONTH, Y.ACTION_YEAR, OT.ACCOUNT_ID, TM.ACTION_TIMESTAMP, OT.STATUS
 ),
-/* Consulta das transações feitas e recebidas via PIX */
+/* Consulta das transaÃ§Ãµes feitas e recebidas via PIX */
 PIX_MOVEMENTS_T AS (
 	SELECT 
 		PIX.PIX_COMPLETED_AT												AS COMPLETED,
-		M.ACTION_MONTH														AS ACTION_MONTH, 
-		Y.ACTION_YEAR														AS ACTION_YEAR,
-		PIX.ACCOUNT_ID														AS ACCOUNT_ID,
-		TM.ACTION_TIMESTAMP													AS ACTION_TIMESTAMP,
+		M.ACTION_MONTH													AS ACTION_MONTH, 
+		Y.ACTION_YEAR													AS ACTION_YEAR,
+		PIX.ACCOUNT_ID													AS ACCOUNT_ID,
+		TM.ACTION_TIMESTAMP												AS ACTION_TIMESTAMP,
 		CASE
 			WHEN PIX.IN_OR_OUT = 'pix_in' AND PIX.STATUS = 'completed'
 				THEN SUM(PIX.PIX_AMOUNT)		
-					ELSE 0 END												AS AMOUNT_IN,
+					ELSE 0 END										AS AMOUNT_IN,
 		CASE
 			WHEN PIX.IN_OR_OUT = 'pix_out' AND PIX.STATUS = 'completed'
 				THEN SUM(PIX.PIX_AMOUNT)				
-					ELSE 0 END												AS AMOUNT_OUT
+					ELSE 0 END										AS AMOUNT_OUT
 	FROM 
 		D_TIME TM
 		JOIN PIX_MOVEMENTS PIX ON PIX.PIX_COMPLETED_AT = TM.TIME_ID
@@ -87,12 +87,12 @@ VALORES_IN_OUTS AS(
 	FROM 
 		PIX_MOVEMENTS_T
 )
-/* Soma dos valores, para apresentação dos resultados. Tomei a liberdade de formatar em valores PT-BR para melhor leitura  */
+/* Soma dos valores, para apresentaÃ§Ã£o dos resultados. Tomei a liberdade de formatar em valores PT-BR para melhor leitura  */
 SELECT 
-	V.ACTION_MONTH																															AS MES, 
-	CONCAT(C.FIRST_NAME,' ' , C.LAST_NAME)																									AS NOME,
-	FORMAT(SUM(V.AMOUNT_IN), 'C', 'pt-br')																									AS TRANSFERENCIA_RECEBIDA,
-	FORMAT(SUM(V.AMOUNT_OUT), 'C', 'pt-br')																									AS TRANSFERENCIA_FEITA,
+	V.ACTION_MONTH																AS MES, 
+	CONCAT(C.FIRST_NAME,' ' , C.LAST_NAME)													AS NOME,
+	FORMAT(SUM(V.AMOUNT_IN), 'C', 'pt-br')													AS TRANSFERENCIA_RECEBIDA,
+	FORMAT(SUM(V.AMOUNT_OUT), 'C', 'pt-br')													AS TRANSFERENCIA_FEITA,
 	FORMAT(SUM(SUM(V.AMOUNT_IN) - SUM(V.AMOUNT_OUT)) OVER(ORDER BY CONCAT(C.FIRST_NAME,' ' , C.LAST_NAME), V.ACTION_MONTH), 'C', 'pt-br')	AS SALDO_CONTA	
 FROM 
 	CUSTOMERS C 
